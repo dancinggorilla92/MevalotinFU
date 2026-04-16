@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메바로친 활동처 현황판</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+:root {
+  --primary: #1a56db;
+  --primary-light: #e8f0fe;
+  --success: #0e9f6e;
+  --success-light: #def7ec;
+  --danger: #e02424;
+  --danger-light: #fde8e8;
+  --warning: #c27803;
+  --warning-light: #fdf6b2;
+  --gray: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f9fafb;
+  --text: #111827;
+  --text-muted: #6b7280;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+/* TOP BAR */
+.topbar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 12px 20px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar h1 { font-size: 16px; font-weight: 700; color: var(--text); }
+.badge-live { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--success); background: var(--success-light); padding: 3px 10px; border-radius: 20px; }
+.badge-live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.search-box { display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; background: var(--bg); }
+.search-box input { border: none; background: transparent; font-size: 13px; width: 180px; outline: none; color: var(--text); }
+.filter-select { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; background: #fff; color: var(--text); outline: none; cursor: pointer; }
+.btn-export { padding: 6px 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+/* STATS */
+.stats-row { display: flex; gap: 12px; padding: 16px 20px; overflow-x: auto; }
+.stat-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; min-width: 160px; flex-shrink: 0; }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--text); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.stat-card.s-total .stat-value { color: var(--primary); }
+.stat-card.s-done .stat-value { color: var(--success); }
+.stat-card.s-pending .stat-value { color: var(--warning); }
+
+/* PROGRESS BAR */
+.progress-bar-wrap { padding: 0 20px 12px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+.progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width .5s; }
+
+/* TABLE WRAPPER */
+.table-wrap { padding: 0 20px 40px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-width: 1200px; }
+thead tr { background: #f3f4f6; }
+th { padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9fafb; }
+
+.col-no { width: 40px; text-align: center; color: var(--text-muted); font-size: 12px; }
+.col-name { min-width: 180px; font-weight: 500; }
+.col-branch { width: 70px; }
+.col-office { width: 100px; }
+.col-ox { width: 80px; text-align: center; }
+.col-hcp { min-width: 130px; }
+
+/* BRANCH BADGES */
+.branch-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+.branch-남부 { background: #fde68a; color: #92400e; }
+.branch-동부 { background: #bfdbfe; color: #1e40af; }
+.branch-서부 { background: #d1fae5; color: #065f46; }
+
+/* OX TOGGLE */
+.ox-wrap { display: flex; justify-content: center; }
+.ox-btn {
+  width: 36px; height: 28px; border: 1.5px solid var(--border);
+  border-radius: 6px; background: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center;
+}
+.ox-btn.val-O { background: var(--success-light); border-color: var(--success); color: var(--success); }
+.ox-btn.val-X { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+.ox-btn.val-none { color: #d1d5db; }
+
+/* HCP INPUT */
+.hcp-input {
+  width: 100%; border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 8px; font-size: 12px; color: var(--text); background: #fff;
+  transition: border-color .15s; font-family: inherit;
+}
+.hcp-input:focus { outline: none; border-color: var(--primary); }
+.hcp-input.saved { border-color: var(--success); background: var(--success-light); }
+
+/* SAVING INDICATOR */
+.saving-dot { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .3s; z-index: 999; }
+.saving-dot.show { opacity: 1; }
+
+/* FIREBASE SETUP MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 12px; padding: 28px; max-width: 520px; width: 90%; }
+.modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+.modal input, .modal textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 13px; margin-bottom: 10px; font-family: inherit;
+}
+.modal textarea { height: 100px; resize: vertical; }
+.modal input:focus, .modal textarea:focus { outline: none; border-color: var(--primary); }
+.modal-btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.step { background: var(--primary-light); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; line-height: 1.7; color: var(--text); }
+.step b { color: var(--primary); }
+.step code { background: #e0e7ff; padding: 1px 5px; border-radius: 4px; font-family: monospace; }
+
+@media(max-width:600px){
+  .topbar { flex-wrap: wrap; gap: 8px; }
+  .stats-row { flex-wrap: nowrap; }
+  .search-box input { width: 120px; }
+}
+
+/* LOGIN SCREEN */
+.login-screen {
+  position: fixed; inset: 0; background: linear-gradient(135deg, #1a56db 0%, #0e9f6e 100%);
+  display: flex; align-items: center; justify-content: center; z-index: 999;
+}
+.login-box {
+  background: #fff; border-radius: 16px; padding: 40px 36px;
+  width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.2); text-align: center;
+}
+.login-logo { font-size: 36px; margin-bottom: 8px; }
+.login-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+.login-input {
+  width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 15px; font-family: inherit;
+  margin-bottom: 12px; text-align: center; letter-spacing: 3px;
+  transition: border-color .2s;
+}
+.login-input:focus { outline: none; border-color: var(--primary); }
+.login-btn {
+  width: 100%; padding: 13px; background: var(--primary); color: #fff;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: background .2s; font-family: inherit;
+}
+.login-btn:hover { background: #1446b5; }
+.login-error { color: var(--danger); font-size: 13px; margin-top: 10px; display: none; }
+.login-error.show { display: block; }
+.logout-btn {
+  padding: 5px 12px; background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer;
+  font-family: inherit;
+}
+.logout-btn:hover { background: var(--bg); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">📋</div>
+    <div class="login-title">메바로친 활동처 현황판</div>
+    <div class="login-sub">접근하려면 비밀번호를 입력해주세요</div>
+    <input type="password" class="login-input" id="pwInput" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button class="login-btn" onclick="checkLogin()">로그인</button>
+    <div class="login-error" id="loginError">비밀번호가 올바르지 않아요</div>
+  </div>
+</div>
+
+
+<!-- FIREBASE SETUP MODAL -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <h2>🔥 Firebase 설정</h2>
+    <p>실시간 공유를 위해 Firebase 연결이 필요해요. 아래 순서대로 진행해주세요.</p>
+
+    <div class="step">
+      <b>1단계</b> — <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속<br>
+      → <b>프로젝트 만들기</b> 클릭 → 이름 입력 (예: mevalotin-dashboard)<br>
+      → Google Analytics <b>사용 안함</b> 선택 → <b>프로젝트 만들기</b>
+    </div>
+    <div class="step">
+      <b>2단계</b> — 프로젝트 홈 → <b>Realtime Database</b> → <b>데이터베이스 만들기</b><br>
+      → 위치: <code>asia-southeast1</code> → <b>테스트 모드</b>로 시작
+    </div>
+    <div class="step">
+      <b>3단계</b> — 프로젝트 설정(⚙️) → <b>일반</b> 탭 → 하단 <b>웹 앱 추가(&lt;/&gt;)</b><br>
+      → 앱 이름 입력 → <b>firebaseConfig</b> 값 전체 복사
+    </div>
+
+    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">firebaseConfig 붙여넣기</label>
+    <textarea id="firebaseConfigInput" placeholder='const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "...",
+  databaseURL: "https://...",
+  projectId: "...",
+  ...
+};'></textarea>
+    <button class="modal-btn" onclick="initFirebase()">연결하기</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>📋 메바로친 활동처 현황판</h1>
+    <div class="badge-live" id="liveStatus">연결 중...</div>
+  </div>
+  <div class="topbar-right">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="병원명 검색..." oninput="renderTable()">
+    </div>
+    <select class="filter-select" id="filterBranch" onchange="renderTable()">
+      <option value="">전체 본부</option>
+      <option value="남부">남부</option>
+      <option value="동부">동부</option>
+      <option value="서부">서부</option>
+    </select>
+    <select class="filter-select" id="filterLescol" onchange="renderTable()">
+      <option value="">레스콜 전체</option>
+      <option value="O">처방 O</option>
+      <option value="X">처방 X</option>
+      <option value="none">미입력</option>
+    </select>
+    <button class="btn-export" onclick="exportCSV()">📥 CSV 내보내기</button>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" id="statsRow">
+  <div class="stat-card s-total"><div class="stat-label">전체 병원</div><div class="stat-value" id="statTotal">-</div></div>
+  <div class="stat-card s-done"><div class="stat-label">레스콜 처방 O</div><div class="stat-value" id="statO">-</div></div>
+  <div class="stat-card s-pending"><div class="stat-label">레스콜 처방 X</div><div class="stat-value" id="statX">-</div></div>
+  <div class="stat-card"><div class="stat-label">내분비내과 O</div><div class="stat-value" id="statEndo">-</div></div>
+  <div class="stat-card"><div class="stat-label">순환기내과 O</div><div class="stat-value" id="statCardio">-</div></div>
+  <div class="stat-card"><div class="stat-label">신장내과 O</div><div class="stat-value" id="statNephro">-</div></div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-label"><span>레스콜 처방 입력 완료율</span><span id="progressPct">0%</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th class="col-no">#</th>
+        <th class="col-name">병원명</th>
+        <th class="col-branch">본부</th>
+        <th class="col-office">지점</th>
+        <th class="col-ox">레스콜<br>처방 여부</th>
+        <th class="col-ox">내분비<br>내과</th>
+        <th class="col-ox">순환기<br>내과</th>
+        <th class="col-ox">신장<br>내과</th>
+        <th class="col-hcp">HCP 1</th>
+        <th class="col-hcp">HCP 2</th>
+        <th class="col-hcp">HCP 3</th>
+        <th class="col-hcp">HCP 4</th>
+        <th class="col-hcp">HCP 5</th>
+        <th class="col-hcp">HCP 6</th>
+        <th class="col-hcp">HCP 7</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="saving-dot" id="savingDot">✓ 저장됨</div>
+
+<script>
+// ===========================
+// 병원 데이터
+// ===========================
+const HOSPITALS = [
+  {id:1,name:'경상국립대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:2,name:'고신대학교복음병원',branch:'남부',office:'남부 1지점'},
+  {id:3,name:'대동병원',branch:'남부',office:'남부 1지점'},
+  {id:4,name:'동남권원자력의학원원자력병원',branch:'남부',office:'남부 1지점'},
+  {id:5,name:'동래봉생병원',branch:'남부',office:'남부 1지점'},
+  {id:6,name:'동아대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:7,name:'부산광역시의료원',branch:'남부',office:'남부 1지점'},
+  {id:8,name:'부산대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:9,name:'부산성모병원',branch:'남부',office:'남부 1지점'},
+  {id:10,name:'비에이치에스한서병원',branch:'남부',office:'남부 1지점'},
+  {id:11,name:'양산부산대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:12,name:'의료법인동강의료재단동강병원',branch:'남부',office:'남부 1지점'},
+  {id:13,name:'의료법인온그룹의료재단온병원',branch:'남부',office:'남부 1지점'},
+  {id:14,name:'의료법인정화의료재단봉생기념병원',branch:'남부',office:'남부 1지점'},
+  {id:15,name:'인제대학교부산백병원',branch:'남부',office:'남부 1지점'},
+  {id:16,name:'인제대학교해운대백병원',branch:'남부',office:'남부 1지점'},
+  {id:17,name:'창원경상국립대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:18,name:'창원파티마병원',branch:'남부',office:'남부 1지점'},
+  {id:19,name:'학교법인동의병원',branch:'남부',office:'남부 1지점'},
+  {id:20,name:'학교법인성균관대학삼성창원병원',branch:'남부',office:'남부 1지점'},
+  {id:21,name:'학교법인울산공업학원울산대학교병원',branch:'남부',office:'남부 1지점'},
+  {id:22,name:'한국보훈복지의료공단부산보훈병원',branch:'남부',office:'남부 1지점'},
+  {id:23,name:'경북대학교병원',branch:'남부',office:'남부 2지점'},
+  {id:24,name:'계명대학교대구동산병원',branch:'남부',office:'남부 2지점'},
+  {id:25,name:'계명대학교동산병원',branch:'남부',office:'남부 2지점'},
+  {id:26,name:'대구가톨릭대학교병원',branch:'남부',office:'남부 2지점'},
+  {id:27,name:'대구의료원',branch:'남부',office:'남부 2지점'},
+  {id:28,name:'대구파티마병원',branch:'남부',office:'남부 2지점'},
+  {id:29,name:'동국대학교의과대학경주병원',branch:'남부',office:'남부 2지점'},
+  {id:30,name:'순천향대학교부속구미병원',branch:'남부',office:'남부 2지점'},
+  {id:31,name:'영남대학교병원',branch:'남부',office:'남부 2지점'},
+  {id:32,name:'의료법인안동병원',branch:'남부',office:'남부 2지점'},
+  {id:33,name:'의료법인은성의료재단좋은선린병원',branch:'남부',office:'남부 2지점'},
+  {id:34,name:'의료법인한성재단포항세명기독병원',branch:'남부',office:'남부 2지점'},
+  {id:35,name:'칠곡경북대학교병원',branch:'남부',office:'남부 2지점'},
+  {id:36,name:'포항성모병원',branch:'남부',office:'남부 2지점'},
+  {id:37,name:'한국보훈복지의료공단대구보훈병원',branch:'남부',office:'남부 2지점'},
+  {id:38,name:'빌리브세웅병원',branch:'남부',office:'남부 3지점'},
+  {id:39,name:'의료법인문병욱의료재단진주고려병원',branch:'남부',office:'남부 3지점'},
+  {id:40,name:'의료법인센텀의료재단센텀종합병원',branch:'남부',office:'남부 3지점'},
+  {id:41,name:'의료법인은성의료재단좋은강안병원',branch:'남부',office:'남부 3지점'},
+  {id:42,name:'의료법인은성의료재단좋은삼선병원',branch:'남부',office:'남부 3지점'},
+  {id:43,name:'의료법인인당의료재단부민병원',branch:'남부',office:'남부 3지점'},
+  {id:44,name:'의료법인인당의료재단해운대부민병원',branch:'남부',office:'남부 3지점'},
+  {id:45,name:'의료법인합포의료재단에스엠지연세병원',branch:'남부',office:'남부 3지점'},
+  {id:46,name:'좋은문화병원',branch:'남부',office:'남부 3지점'},
+  {id:47,name:'의료법인동춘의료재단문경제일병원',branch:'남부',office:'남부 4지점'},
+  {id:48,name:'전북대학교병원',branch:'남부',office:'남부 5지점'},
+  {id:49,name:'전북특별자치도군산의료원',branch:'남부',office:'남부 5지점'},
+  {id:50,name:'의료법인오성의료재단동군산병원',branch:'남부',office:'남부 5지점'},
+  {id:51,name:'광주보훈병원',branch:'남부',office:'남부 6지점'},
+  {id:52,name:'목포한국병원',branch:'남부',office:'남부 6지점'},
+  {id:53,name:'성가롤로병원',branch:'남부',office:'남부 6지점'},
+  {id:54,name:'전남대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:55,name:'조선대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:56,name:'의료법인한마음의료재단여수제일병원',branch:'남부',office:'남부 6지점'},
+  {id:57,name:'화순전남대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:58,name:'경희대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:59,name:'국립중앙의료원',branch:'동부',office:'동부 1지점'},
+  {id:60,name:'노원을지대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:61,name:'분당서울대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:62,name:'삼육서울병원',branch:'동부',office:'동부 1지점'},
+  {id:63,name:'서울특별시서울의료원',branch:'동부',office:'동부 1지점'},
+  {id:64,name:'순천향대학교부속서울병원',branch:'동부',office:'동부 1지점'},
+  {id:65,name:'아주대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:66,name:'인제대학교상계백병원',branch:'동부',office:'동부 1지점'},
+  {id:67,name:'중앙대학교광명병원',branch:'동부',office:'동부 1지점'},
+  {id:68,name:'중앙대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:69,name:'차의과학대학교강남차병원',branch:'동부',office:'동부 1지점'},
+  {id:70,name:'가톨릭대학교서울성모병원',branch:'동부',office:'동부 1지점'},
+  {id:71,name:'고려대학교의과대학부속안암병원',branch:'동부',office:'동부 1지점'},
+  {id:72,name:'한국원자력의학원원자력병원',branch:'동부',office:'동부 1지점'},
+  {id:73,name:'한양대학교구리병원',branch:'동부',office:'동부 1지점'},
+  {id:74,name:'가톨릭대학교성빈센트병원',branch:'동부',office:'동부 2지점'},
+  {id:75,name:'가톨릭대학교의정부성모병원',branch:'동부',office:'동부 2지점'},
+  {id:76,name:'강동경희대학교의대병원',branch:'동부',office:'동부 2지점'},
+  {id:77,name:'강북삼성병원',branch:'동부',office:'동부 2지점'},
+  {id:78,name:'건국대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:79,name:'명지성모병원',branch:'동부',office:'동부 2지점'},
+  {id:80,name:'서울대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:81,name:'성심의료재단강동성심병원',branch:'동부',office:'동부 2지점'},
+  {id:82,name:'의료법인한전의료재단한일병원',branch:'동부',office:'동부 2지점'},
+  {id:83,name:'서울아산병원',branch:'동부',office:'동부 2지점'},
+  {id:84,name:'한국보훈복지의료공단중앙보훈병원',branch:'동부',office:'동부 2지점'},
+  {id:85,name:'추병원',branch:'동부',office:'동부 2지점'},
+  {id:86,name:'의정부을지대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:87,name:'현대병원',branch:'동부',office:'동부 3지점'},
+  {id:88,name:'성남시의료원',branch:'동부',office:'동부 4지점'},
+  {id:89,name:'강남병원',branch:'동부',office:'동부 4지점'},
+  {id:90,name:'강릉아산병원',branch:'동부',office:'동부 5지점'},
+  {id:91,name:'강원대학교병원',branch:'동부',office:'동부 5지점'},
+  {id:92,name:'삼성서울병원',branch:'동부',office:'동부 5지점'},
+  {id:93,name:'연세대학교원주세브란스기독병원',branch:'동부',office:'동부 5지점'},
+  {id:94,name:'연세대학교의과대학용인세브란스병원',branch:'동부',office:'동부 5지점'},
+  {id:95,name:'차의과학대학교분당차병원',branch:'동부',office:'동부 5지점'},
+  {id:96,name:'의료법인강릉동인병원',branch:'동부',office:'동부 5지점'},
+  {id:97,name:'대진의료재단분당제생병원',branch:'동부',office:'동부 5지점'},
+  {id:98,name:'한림대학교동탄성심병원',branch:'동부',office:'동부 5지점'},
+  {id:99,name:'한림대학교춘천성심병원',branch:'동부',office:'동부 5지점'},
+  {id:100,name:'가톨릭대학교은평성모병원',branch:'서부',office:'서부 1지점'},
+  {id:101,name:'국민건강보험공단일산병원',branch:'서부',office:'서부 1지점'},
+  {id:102,name:'동국대학교일산불교병원',branch:'서부',office:'서부 1지점'},
+  {id:103,name:'연세대학교의과대학강남세브란스병원',branch:'서부',office:'서부 1지점'},
+  {id:104,name:'연세대학교의과대학세브란스병원',branch:'서부',office:'서부 1지점'},
+  {id:105,name:'원광대학교산본병원',branch:'서부',office:'서부 1지점'},
+  {id:106,name:'의료법인명지의료재단명지병원',branch:'서부',office:'서부 1지점'},
+  {id:107,name:'의료법인우리의료재단김포우리병원',branch:'서부',office:'서부 1지점'},
+  {id:108,name:'인제대학교일산백병원',branch:'서부',office:'서부 1지점'},
+  {id:109,name:'한림대학교성심병원',branch:'서부',office:'서부 1지점'},
+  {id:110,name:'의료법인인봉의료재단뉴고려병원',branch:'서부',office:'서부 1지점'},
+  {id:111,name:'한림대학교강남성심병원',branch:'서부',office:'서부 1지점'},
+  {id:112,name:'한양대학교병원',branch:'서부',office:'서부 1지점'},
+  {id:113,name:'홍익병원',branch:'서부',office:'서부 1지점'},
+  {id:114,name:'가톨릭관동대학교국제성모병원',branch:'서부',office:'서부 2지점'},
+  {id:115,name:'가톨릭대학교부천성모병원',branch:'서부',office:'서부 2지점'},
+  {id:116,name:'가톨릭대학교여의도성모병원',branch:'서부',office:'서부 2지점'},
+  {id:117,name:'가톨릭대학교인천성모병원',branch:'서부',office:'서부 2지점'},
+  {id:118,name:'고려대학교의과대학부속구로병원',branch:'서부',office:'서부 2지점'},
+  {id:119,name:'고려대학교의과대학부속안산병원',branch:'서부',office:'서부 2지점'},
+  {id:120,name:'부천세종병원',branch:'서부',office:'서부 2지점'},
+  {id:121,name:'서울특별시보라매병원',branch:'서부',office:'서부 2지점'},
+  {id:122,name:'순천향대학교부속부천병원',branch:'서부',office:'서부 2지점'},
+  {id:123,name:'의료법인길의료재단길병원',branch:'서부',office:'서부 2지점'},
+  {id:124,name:'이화여자대학교의과대학부속목동병원',branch:'서부',office:'서부 2지점'},
+  {id:125,name:'이화여자대학교의과대학부속서울병원',branch:'서부',office:'서부 2지점'},
+  {id:126,name:'인천기독병원',branch:'서부',office:'서부 2지점'},
+  {id:127,name:'인천세종병원',branch:'서부',office:'서부 2지점'},
+  {id:128,name:'인하대학교의과대학부속병원',branch:'서부',office:'서부 2지점'},
+  {id:129,name:'한국보훈복지의료공단인천보훈병원',branch:'서부',office:'서부 2지점'},
+  {id:130,name:'의료법인인천사랑병원',branch:'서부',office:'서부 3지점'},
+  {id:131,name:'효산의료재단안양샘병원',branch:'서부',office:'서부 4지점'},
+  {id:132,name:'의료법인루가의료재단나은병원',branch:'서부',office:'서부 4지점'},
+  {id:133,name:'부평세림병원',branch:'서부',office:'서부 4지점'},
+  {id:134,name:'비에스종합병원',branch:'서부',office:'서부 4지점'},
+  {id:135,name:'의료법인대인의료재단다니엘종합병원',branch:'서부',office:'서부 4지점'},
+  {id:136,name:'건국대학교충주병원',branch:'서부',office:'서부 5지점'},
+  {id:137,name:'단국대학교의과대학부속병원',branch:'서부',office:'서부 5지점'},
+  {id:138,name:'세종충남대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:139,name:'순천향대학교부속천안병원',branch:'서부',office:'서부 5지점'},
+  {id:140,name:'의료법인영서의료재단천안충무병원',branch:'서부',office:'서부 5지점'},
+  {id:141,name:'의료법인영훈의료재단대전선병원',branch:'서부',office:'서부 5지점'},
+  {id:142,name:'의료법인백제병원',branch:'서부',office:'서부 5지점'},
+  {id:143,name:'대전한국병원',branch:'서부',office:'서부 5지점'},
+  {id:144,name:'청주성모병원',branch:'서부',office:'서부 5지점'},
+  {id:145,name:'충남대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:146,name:'충북대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:147,name:'가톨릭대학교대전성모병원',branch:'서부',office:'서부 5지점'},
+  {id:148,name:'건양대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:149,name:'대전을지대학교병원',branch:'서부',office:'서부 5지점'},
+];
+
+// ===========================
+// 상태 관리
+// ===========================
+let db = null;
+let dbData = {};
+let saveTimer = null;
+
+// ===========================
+// Firebase 초기화
+// ===========================
+function initFirebase() {
+  const raw = document.getElementById('firebaseConfigInput').value.trim();
+  let config;
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error();
+    config = eval('(' + match[0] + ')');
+    if (!config.databaseURL) throw new Error('databaseURL이 없어요. Realtime Database를 먼저 생성해주세요!');
+  } catch(e) {
+    alert('설정 형식이 올바르지 않아요.\nfirebaseConfig 전체를 복사해서 붙여넣어주세요!\n\n오류: ' + e.message);
+    return;
+  }
+
+  try {
+    firebase.initializeApp(config);
+    db = firebase.database();
+    localStorage.setItem('fbConfig', JSON.stringify(config));
+    document.getElementById('setupModal').style.display = 'none';
+    document.getElementById('liveStatus').textContent = '실시간 연결됨';
+    startListening();
+  } catch(e) {
+    alert('Firebase 연결 실패: ' + e.message);
+  }
+}
+
+function startListening() {
+  db.ref('dashboard').on('value', snap => {
+    dbData = snap.val() || {};
+    renderTable();
+    updateStats();
+  });
+}
+
+// ===========================
+// 저장 함수
+// ===========================
+function saveField(id, field, value) {
+  if (!db) { dbData[id] = dbData[id] || {}; dbData[id][field] = value; updateStats(); return; }
+  clearTimeout(saveTimer);
+  db.ref(`dashboard/${id}/${field}`).set(value);
+  const dot = document.getElementById('savingDot');
+  dot.classList.add('show');
+  saveTimer = setTimeout(() => dot.classList.remove('show'), 1500);
+}
+
+function toggleOX(id, field, current) {
+  const next = current === 'O' ? 'X' : current === 'X' ? 'none' : 'O';
+  saveField(id, field, next);
+  if (!db) { renderTable(); updateStats(); }
+}
+
+let hcpTimers = {};
+function onHcpInput(id, field, value) {
+  if (!db) { dbData[id] = dbData[id] || {}; dbData[id][field] = value; return; }
+  clearTimeout(hcpTimers[id+field]);
+  hcpTimers[id+field] = setTimeout(() => {
+    db.ref(`dashboard/${id}/${field}`).set(value);
+    const dot = document.getElementById('savingDot');
+    dot.classList.add('show');
+    setTimeout(() => dot.classList.remove('show'), 1500);
+  }, 800);
+}
+
+// ===========================
+// 렌더링
+// ===========================
+function getVal(id, field) {
+  return (dbData[id] && dbData[id][field]) ? dbData[id][field] : 'none';
+}
+function getHcp(id, field) {
+  return (dbData[id] && dbData[id][field]) ? dbData[id][field] : '';
+}
+
+function oxBtn(id, field) {
+  const val = getVal(id, field);
+  const label = val === 'O' ? 'O' : val === 'X' ? 'X' : '·';
+  return `<div class="ox-wrap"><button class="ox-btn val-${val}" onclick="toggleOX(${id},'${field}','${val}')">${label}</button></div>`;
+}
+
+function hcpCell(id, field, placeholder) {
+  const val = getHcp(id, field);
+  return `<input class="hcp-input" value="${val.replace(/"/g,'&quot;')}" placeholder="${placeholder}" oninput="onHcpInput(${id},'${field}',this.value)">`;
+}
+
+function renderTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const branchFilter = document.getElementById('filterBranch').value;
+  const lescolFilter = document.getElementById('filterLescol').value;
+
+  const filtered = HOSPITALS.filter(h => {
+    if (search && !h.name.toLowerCase().includes(search)) return false;
+    if (branchFilter && h.branch !== branchFilter) return false;
+    if (lescolFilter) {
+      const val = getVal(h.id, 'lescol');
+      if (lescolFilter === 'none' && val !== 'none') return false;
+      if (lescolFilter === 'O' && val !== 'O') return false;
+      if (lescolFilter === 'X' && val !== 'X') return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = filtered.map((h, i) => `
+    <tr>
+      <td class="col-no">${i+1}</td>
+      <td class="col-name">${h.name}</td>
+      <td class="col-branch"><span class="branch-badge branch-${h.branch}">${h.branch}</span></td>
+      <td class="col-office" style="font-size:12px;color:var(--text-muted)">${h.office}</td>
+      <td class="col-ox">${oxBtn(h.id,'lescol')}</td>
+      <td class="col-ox">${oxBtn(h.id,'endo')}</td>
+      <td class="col-ox">${oxBtn(h.id,'cardio')}</td>
+      <td class="col-ox">${oxBtn(h.id,'nephro')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp1','HCP 1')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp2','HCP 2')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp3','HCP 3')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp4','HCP 4')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp5','HCP 5')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp6','HCP 6')}</td>
+      <td class="col-hcp">${hcpCell(h.id,'hcp7','HCP 7')}</td>
+    </tr>
+  `).join('');
+}
+
+function updateStats() {
+  const total = HOSPITALS.length;
+  let cntO=0, cntX=0, cntEndo=0, cntCardio=0, cntNephro=0, cntFilled=0;
+  HOSPITALS.forEach(h => {
+    const l = getVal(h.id,'lescol');
+    if(l==='O') cntO++;
+    if(l==='X') cntX++;
+    if(l!=='none') cntFilled++;
+    if(getVal(h.id,'endo')==='O') cntEndo++;
+    if(getVal(h.id,'cardio')==='O') cntCardio++;
+    if(getVal(h.id,'nephro')==='O') cntNephro++;
+  });
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statO').textContent = cntO;
+  document.getElementById('statX').textContent = cntX;
+  document.getElementById('statEndo').textContent = cntEndo;
+  document.getElementById('statCardio').textContent = cntCardio;
+  document.getElementById('statNephro').textContent = cntNephro;
+  const pct = Math.round(cntFilled/total*100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ===========================
+// CSV 내보내기
+// ===========================
+function exportCSV() {
+  const headers = ['번호','병원명','본부','지점','레스콜처방여부','내분비내과','순환기내과','신장내과','HCP1','HCP2','HCP3','HCP4','HCP5','HCP6','HCP7'];
+  const rows = HOSPITALS.map(h => [
+    h.id, h.name, h.branch, h.office,
+    getVal(h.id,'lescol'), getVal(h.id,'endo'), getVal(h.id,'cardio'), getVal(h.id,'nephro'),
+    getHcp(h.id,'hcp1'), getHcp(h.id,'hcp2'), getHcp(h.id,'hcp3'), getHcp(h.id,'hcp4'),
+    getHcp(h.id,'hcp5'), getHcp(h.id,'hcp6'), getHcp(h.id,'hcp7')
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = '메바로친_현황_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+
+// ===========================
+// 비밀번호 설정 (여기서 변경 가능)
+// ===========================
+const PASSWORD = 'mevalotin2025';
+
+function checkLogin() {
+  const input = document.getElementById('pwInput').value;
+  if (input === PASSWORD) {
+    sessionStorage.setItem('auth', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    initApp();
+  } else {
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('auth');
+  location.reload();
+}
+
+// ===========================
+// 앱 시작
+// ===========================
+function initApp() {
+  renderTable();
+  updateStats();
+  const savedConfig = localStorage.getItem('fbConfig');
+  if (savedConfig) {
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(JSON.parse(savedConfig));
+      db = firebase.database();
+      document.getElementById('setupModal').style.display = 'none';
+      document.getElementById('liveStatus').textContent = '실시간 연결됨';
+      startListening();
+    } catch(e) {
+      console.error('Firebase 연결 오류:', e);
+    }
+  }
+}
+
+// 페이지 로드 시 인증 확인
+window.onload = function() {
+  if (sessionStorage.getItem('auth') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    initApp();
+  }
+};
+
+</script>
+</body>
+</html>
