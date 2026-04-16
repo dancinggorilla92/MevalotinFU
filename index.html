@@ -634,9 +634,8 @@ function renderTable() {
       <td class="col-hcp">${hcpCell(h.id,'hcp7','HCP 7')}</td>
     </tr>
   `).join('');
-}
 
-// 모바일 카드 렌더링
+  // 모바일 카드 렌더링
   const mobileCards = document.getElementById('mobileCards');
   if (mobileCards) {
     mobileCards.innerHTML = filtered.map((h, i) => `
