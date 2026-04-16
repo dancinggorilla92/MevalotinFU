@@ -161,6 +161,67 @@ tr:hover td { background: #f9fafb; }
   font-family: inherit;
 }
 .logout-btn:hover { background: var(--bg); }
+
+/* ===========================
+   모바일 반응형
+   =========================== */
+@media(max-width: 768px) {
+  .topbar { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+  .topbar h1 { font-size: 14px; }
+  .topbar-right { width: 100%; justify-content: space-between; }
+  .search-box { flex: 1; }
+  .search-box input { width: 100%; }
+  .filter-select { font-size: 12px; padding: 5px 6px; }
+  .btn-export { font-size: 12px; padding: 5px 10px; }
+  .logout-btn { font-size: 11px; padding: 4px 8px; }
+
+  .stats-row { padding: 10px 12px; gap: 8px; }
+  .stat-card { min-width: 120px; padding: 10px 12px; }
+  .stat-value { font-size: 18px; }
+
+  .progress-bar-wrap { padding: 0 12px 10px; }
+
+  /* 테이블 숨기고 카드로 대체 */
+  .table-wrap { padding: 0 12px 40px; }
+  table { display: none; }
+
+  .mobile-cards { display: flex; flex-direction: column; gap: 12px; }
+  .m-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .m-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .m-card-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .m-card-no { font-size: 11px; color: var(--text-muted); margin-right: 6px; }
+  .m-card-branch { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; flex-shrink: 0; }
+  .m-card-office { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+
+  .m-ox-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .m-ox-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 60px; }
+  .m-ox-label { font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; }
+  .m-ox-btn {
+    width: 44px; height: 36px; border: 1.5px solid var(--border);
+    border-radius: 8px; background: #fff; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center;
+  }
+  .m-ox-btn.val-O { background: var(--success-light); border-color: var(--success); color: var(--success); }
+  .m-ox-btn.val-X { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+  .m-ox-btn.val-none { color: #d1d5db; }
+
+  .m-hcp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .m-hcp-item { display: flex; flex-direction: column; gap: 3px; }
+  .m-hcp-label { font-size: 10px; color: var(--text-muted); }
+  .m-hcp-input {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px;
+    padding: 7px 8px; font-size: 13px; color: var(--text); background: #fff;
+    font-family: inherit;
+  }
+  .m-hcp-input:focus { outline: none; border-color: var(--primary); }
+}
+
+@media(min-width: 769px) {
+  .mobile-cards { display: none; }
+}
 </style>
 </head>
 <body>
@@ -279,6 +340,10 @@ tr:hover td { background: #f9fafb; }
     <tbody id="tableBody"></tbody>
   </table>
 </div>
+
+
+<!-- 모바일 카드 뷰 -->
+<div class="mobile-cards" id="mobileCards"></div>
 
 <div class="saving-dot" id="savingDot">✓ 저장됨</div>
 
@@ -569,6 +634,49 @@ function renderTable() {
       <td class="col-hcp">${hcpCell(h.id,'hcp7','HCP 7')}</td>
     </tr>
   `).join('');
+}
+
+// 모바일 카드 렌더링
+  const mobileCards = document.getElementById('mobileCards');
+  if (mobileCards) {
+    mobileCards.innerHTML = filtered.map((h, i) => `
+      <div class="m-card">
+        <div class="m-card-header">
+          <span class="m-card-no">${i+1}</span>
+          <span class="m-card-name">${h.name}</span>
+          <span class="m-card-branch branch-badge branch-${h.branch}">${h.branch}</span>
+        </div>
+        <div class="m-card-office">📍 ${h.office}</div>
+        <div class="m-ox-row">
+          <div class="m-ox-item">
+            <div class="m-ox-label">레스콜<br>처방</div>
+            <button class="m-ox-btn val-${getVal(h.id,'lescol')}" onclick="toggleOX(${h.id},'lescol','${getVal(h.id,'lescol')}')">${getVal(h.id,'lescol')==='O'?'O':getVal(h.id,'lescol')==='X'?'X':'·'}</button>
+          </div>
+          <div class="m-ox-item">
+            <div class="m-ox-label">내분비<br>내과</div>
+            <button class="m-ox-btn val-${getVal(h.id,'endo')}" onclick="toggleOX(${h.id},'endo','${getVal(h.id,'endo')}')">${getVal(h.id,'endo')==='O'?'O':getVal(h.id,'endo')==='X'?'X':'·'}</button>
+          </div>
+          <div class="m-ox-item">
+            <div class="m-ox-label">순환기<br>내과</div>
+            <button class="m-ox-btn val-${getVal(h.id,'cardio')}" onclick="toggleOX(${h.id},'cardio','${getVal(h.id,'cardio')}')">${getVal(h.id,'cardio')==='O'?'O':getVal(h.id,'cardio')==='X'?'X':'·'}</button>
+          </div>
+          <div class="m-ox-item">
+            <div class="m-ox-label">신장<br>내과</div>
+            <button class="m-ox-btn val-${getVal(h.id,'nephro')}" onclick="toggleOX(${h.id},'nephro','${getVal(h.id,'nephro')}')">${getVal(h.id,'nephro')==='O'?'O':getVal(h.id,'nephro')==='X'?'X':'·'}</button>
+          </div>
+        </div>
+        <div class="m-hcp-grid">
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 1</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp1')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp1',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 2</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp2')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp2',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 3</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp3')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp3',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 4</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp4')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp4',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 5</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp5')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp5',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 6</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp6')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp6',this.value)"></div>
+          <div class="m-hcp-item"><div class="m-hcp-label">HCP 7</div><input class="m-hcp-input" value="${getHcp(h.id,'hcp7')}" placeholder="입력" oninput="onHcpInput(${h.id},'hcp7',this.value)"></div>
+        </div>
+      </div>
+    `).join('');
+  }
 }
 
 function updateStats() {
