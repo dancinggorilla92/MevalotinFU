@@ -326,6 +326,7 @@ tr:hover td { background: #f9fafb; }
         <th class="col-name">병원명</th>
         <th class="col-branch">본부</th>
         <th class="col-office">지점</th>
+        <th class="col-ox">다이이찌<br>산쿄연락</th>
         <th class="col-ox">레스콜<br>처방 여부</th>
         <th class="col-ox">내분비<br>내과</th>
         <th class="col-ox">순환기<br>내과</th>
@@ -362,7 +363,7 @@ const HOSPITALS = [
   {id:6,name:'동아대학교병원',branch:'남부',office:'남부 1지점'},
   {id:7,name:'부산광역시의료원',branch:'남부',office:'남부 1지점'},
   {id:8,name:'부산대학교병원',branch:'남부',office:'남부 1지점'},
-  {id:9,name:'부산성모병원',branch:'남부',office:'남부 1지점'},
+  {id:9,name:'부산성모병원(재단법인천주교부산교구유지재단)',branch:'남부',office:'남부 1지점'},
   {id:10,name:'비에이치에스한서병원',branch:'남부',office:'남부 1지점'},
   {id:11,name:'양산부산대학교병원',branch:'남부',office:'남부 1지점'},
   {id:12,name:'의료법인동강의료재단동강병원',branch:'남부',office:'남부 1지점'},
@@ -372,7 +373,7 @@ const HOSPITALS = [
   {id:16,name:'인제대학교해운대백병원',branch:'남부',office:'남부 1지점'},
   {id:17,name:'창원경상국립대학교병원',branch:'남부',office:'남부 1지점'},
   {id:18,name:'창원파티마병원',branch:'남부',office:'남부 1지점'},
-  {id:19,name:'학교법인동의병원',branch:'남부',office:'남부 1지점'},
+  {id:19,name:'학교법인)동의병원',branch:'남부',office:'남부 1지점'},
   {id:20,name:'학교법인성균관대학삼성창원병원',branch:'남부',office:'남부 1지점'},
   {id:21,name:'학교법인울산공업학원울산대학교병원',branch:'남부',office:'남부 1지점'},
   {id:22,name:'한국보훈복지의료공단부산보훈병원',branch:'남부',office:'남부 1지점'},
@@ -403,68 +404,68 @@ const HOSPITALS = [
   {id:47,name:'의료법인동춘의료재단문경제일병원',branch:'남부',office:'남부 4지점'},
   {id:48,name:'전북대학교병원',branch:'남부',office:'남부 5지점'},
   {id:49,name:'전북특별자치도군산의료원',branch:'남부',office:'남부 5지점'},
-  {id:50,name:'의료법인오성의료재단동군산병원',branch:'남부',office:'남부 5지점'},
-  {id:51,name:'광주보훈병원',branch:'남부',office:'남부 6지점'},
-  {id:52,name:'목포한국병원',branch:'남부',office:'남부 6지점'},
-  {id:53,name:'성가롤로병원',branch:'남부',office:'남부 6지점'},
-  {id:54,name:'전남대학교병원',branch:'남부',office:'남부 6지점'},
-  {id:55,name:'조선대학교병원',branch:'남부',office:'남부 6지점'},
-  {id:56,name:'의료법인한마음의료재단여수제일병원',branch:'남부',office:'남부 6지점'},
-  {id:57,name:'화순전남대학교병원',branch:'남부',office:'남부 6지점'},
-  {id:58,name:'경희대학교병원',branch:'동부',office:'동부 1지점'},
-  {id:59,name:'국립중앙의료원',branch:'동부',office:'동부 1지점'},
-  {id:60,name:'노원을지대학교병원',branch:'동부',office:'동부 1지점'},
-  {id:61,name:'분당서울대학교병원',branch:'동부',office:'동부 1지점'},
-  {id:62,name:'삼육서울병원',branch:'동부',office:'동부 1지점'},
-  {id:63,name:'서울특별시서울의료원',branch:'동부',office:'동부 1지점'},
-  {id:64,name:'순천향대학교부속서울병원',branch:'동부',office:'동부 1지점'},
-  {id:65,name:'아주대학교병원',branch:'동부',office:'동부 1지점'},
-  {id:66,name:'인제대학교상계백병원',branch:'동부',office:'동부 1지점'},
-  {id:67,name:'중앙대학교광명병원',branch:'동부',office:'동부 1지점'},
-  {id:68,name:'중앙대학교병원',branch:'동부',office:'동부 1지점'},
-  {id:69,name:'차의과학대학교강남차병원',branch:'동부',office:'동부 1지점'},
-  {id:70,name:'가톨릭대학교서울성모병원',branch:'동부',office:'동부 1지점'},
-  {id:71,name:'고려대학교의과대학부속안암병원',branch:'동부',office:'동부 1지점'},
-  {id:72,name:'한국원자력의학원원자력병원',branch:'동부',office:'동부 1지점'},
-  {id:73,name:'한양대학교구리병원',branch:'동부',office:'동부 1지점'},
-  {id:74,name:'가톨릭대학교성빈센트병원',branch:'동부',office:'동부 2지점'},
-  {id:75,name:'가톨릭대학교의정부성모병원',branch:'동부',office:'동부 2지점'},
-  {id:76,name:'강동경희대학교의대병원',branch:'동부',office:'동부 2지점'},
-  {id:77,name:'강북삼성병원',branch:'동부',office:'동부 2지점'},
-  {id:78,name:'건국대학교병원',branch:'동부',office:'동부 2지점'},
-  {id:79,name:'명지성모병원',branch:'동부',office:'동부 2지점'},
-  {id:80,name:'서울대학교병원',branch:'동부',office:'동부 2지점'},
-  {id:81,name:'성심의료재단강동성심병원',branch:'동부',office:'동부 2지점'},
-  {id:82,name:'의료법인한전의료재단한일병원',branch:'동부',office:'동부 2지점'},
-  {id:83,name:'서울아산병원',branch:'동부',office:'동부 2지점'},
-  {id:84,name:'한국보훈복지의료공단중앙보훈병원',branch:'동부',office:'동부 2지점'},
-  {id:85,name:'추병원',branch:'동부',office:'동부 2지점'},
-  {id:86,name:'의정부을지대학교병원',branch:'동부',office:'동부 2지점'},
-  {id:87,name:'현대병원',branch:'동부',office:'동부 3지점'},
-  {id:88,name:'성남시의료원',branch:'동부',office:'동부 4지점'},
-  {id:89,name:'강남병원',branch:'동부',office:'동부 4지점'},
-  {id:90,name:'강릉아산병원',branch:'동부',office:'동부 5지점'},
-  {id:91,name:'강원대학교병원',branch:'동부',office:'동부 5지점'},
-  {id:92,name:'삼성서울병원',branch:'동부',office:'동부 5지점'},
-  {id:93,name:'연세대학교원주세브란스기독병원',branch:'동부',office:'동부 5지점'},
-  {id:94,name:'연세대학교의과대학용인세브란스병원',branch:'동부',office:'동부 5지점'},
-  {id:95,name:'차의과학대학교분당차병원',branch:'동부',office:'동부 5지점'},
-  {id:96,name:'의료법인강릉동인병원',branch:'동부',office:'동부 5지점'},
-  {id:97,name:'대진의료재단분당제생병원',branch:'동부',office:'동부 5지점'},
-  {id:98,name:'한림대학교동탄성심병원',branch:'동부',office:'동부 5지점'},
-  {id:99,name:'한림대학교춘천성심병원',branch:'동부',office:'동부 5지점'},
-  {id:100,name:'가톨릭대학교은평성모병원',branch:'서부',office:'서부 1지점'},
-  {id:101,name:'국민건강보험공단일산병원',branch:'서부',office:'서부 1지점'},
-  {id:102,name:'동국대학교일산불교병원',branch:'서부',office:'서부 1지점'},
-  {id:103,name:'연세대학교의과대학강남세브란스병원',branch:'서부',office:'서부 1지점'},
-  {id:104,name:'연세대학교의과대학세브란스병원',branch:'서부',office:'서부 1지점'},
-  {id:105,name:'원광대학교산본병원',branch:'서부',office:'서부 1지점'},
-  {id:106,name:'의료법인명지의료재단명지병원',branch:'서부',office:'서부 1지점'},
-  {id:107,name:'의료법인우리의료재단김포우리병원',branch:'서부',office:'서부 1지점'},
-  {id:108,name:'인제대학교일산백병원',branch:'서부',office:'서부 1지점'},
-  {id:109,name:'한림대학교성심병원',branch:'서부',office:'서부 1지점'},
-  {id:110,name:'의료법인인봉의료재단뉴고려병원',branch:'서부',office:'서부 1지점'},
-  {id:111,name:'한림대학교강남성심병원',branch:'서부',office:'서부 1지점'},
+  {id:50,name:'광주보훈병원',branch:'남부',office:'남부 6지점'},
+  {id:51,name:'목포한국병원',branch:'남부',office:'남부 6지점'},
+  {id:52,name:'성가롤로병원',branch:'남부',office:'남부 6지점'},
+  {id:53,name:'전남대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:54,name:'조선대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:55,name:'의료법인한마음의료재단여수제일병원',branch:'남부',office:'남부 6지점'},
+  {id:56,name:'화순전남대학교병원',branch:'남부',office:'남부 6지점'},
+  {id:57,name:'경희대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:58,name:'국립중앙의료원',branch:'동부',office:'동부 1지점'},
+  {id:59,name:'노원을지대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:60,name:'분당서울대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:61,name:'삼육서울병원',branch:'동부',office:'동부 1지점'},
+  {id:62,name:'서울특별시서울의료원',branch:'동부',office:'동부 1지점'},
+  {id:63,name:'순천향대학교부속서울병원',branch:'동부',office:'동부 1지점'},
+  {id:64,name:'아주대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:65,name:'인제대학교상계백병원',branch:'동부',office:'동부 1지점'},
+  {id:66,name:'중앙대학교광명병원',branch:'동부',office:'동부 1지점'},
+  {id:67,name:'중앙대학교병원',branch:'동부',office:'동부 1지점'},
+  {id:68,name:'차의과학대학교강남차병원',branch:'동부',office:'동부 1지점'},
+  {id:69,name:'학교법인가톨릭학원가톨릭대학교서울성모병원',branch:'동부',office:'동부 1지점'},
+  {id:70,name:'학교법인고려중앙학원고려대학교의과대학부속병원(안암병원)',branch:'동부',office:'동부 1지점'},
+  {id:71,name:'한국원자력의학원원자력병원',branch:'동부',office:'동부 1지점'},
+  {id:72,name:'한양대학교구리병원',branch:'동부',office:'동부 1지점'},
+  {id:73,name:'가톨릭대학교성빈센트병원',branch:'동부',office:'동부 2지점'},
+  {id:74,name:'가톨릭대학교의정부성모병원',branch:'동부',office:'동부 2지점'},
+  {id:75,name:'강동경희대학교의대병원',branch:'동부',office:'동부 2지점'},
+  {id:76,name:'강북삼성병원',branch:'동부',office:'동부 2지점'},
+  {id:77,name:'건국대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:78,name:'명지성모병원',branch:'동부',office:'동부 2지점'},
+  {id:79,name:'서울대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:80,name:'성심의료재단강동성심병원',branch:'동부',office:'동부 2지점'},
+  {id:81,name:'의료법인한전의료재단한일병원',branch:'동부',office:'동부 2지점'},
+  {id:82,name:'재단법인아산사회복지재단서울아산병원',branch:'동부',office:'동부 2지점'},
+  {id:83,name:'한국보훈복지의료공단중앙보훈병원',branch:'동부',office:'동부 2지점'},
+  {id:84,name:'추병원',branch:'동부',office:'동부 2지점'},
+  {id:85,name:'학교법인을지학원의정부을지대학교병원',branch:'동부',office:'동부 2지점'},
+  {id:86,name:'현대병원',branch:'동부',office:'동부 3지점'},
+  {id:87,name:'성남시의료원',branch:'동부',office:'동부 4지점'},
+  {id:88,name:'강남병원',branch:'동부',office:'동부 4지점'},
+  {id:89,name:'강릉아산병원',branch:'동부',office:'동부 5지점'},
+  {id:90,name:'강원대학교병원',branch:'동부',office:'동부 5지점'},
+  {id:91,name:'삼성서울병원',branch:'동부',office:'동부 5지점'},
+  {id:92,name:'연세대학교원주세브란스기독병원',branch:'동부',office:'동부 5지점'},
+  {id:93,name:'연세대학교의과대학용인세브란스병원',branch:'동부',office:'동부 5지점'},
+  {id:94,name:'차의과학대학교분당차병원',branch:'동부',office:'동부 5지점'},
+  {id:95,name:'의료법인강릉동인병원',branch:'동부',office:'동부 5지점'},
+  {id:96,name:'대진의료재단분당제생병원',branch:'동부',office:'동부 5지점'},
+  {id:97,name:'한림대학교동탄성심병원',branch:'동부',office:'동부 5지점'},
+  {id:98,name:'한림대학교춘천성심병원',branch:'동부',office:'동부 5지점'},
+  {id:99,name:'가톨릭대학교은평성모병원',branch:'서부',office:'서부 1지점'},
+  {id:100,name:'국민건강보험공단일산병원',branch:'서부',office:'서부 1지점'},
+  {id:101,name:'동국대학교일산불교병원',branch:'서부',office:'서부 1지점'},
+  {id:102,name:'연세대학교의과대학강남세브란스병원',branch:'서부',office:'서부 1지점'},
+  {id:103,name:'연세대학교의과대학세브란스병원',branch:'서부',office:'서부 1지점'},
+  {id:104,name:'원광대학교산본병원',branch:'서부',office:'서부 1지점'},
+  {id:105,name:'의료법인명지의료재단명지병원',branch:'서부',office:'서부 1지점'},
+  {id:106,name:'의료법인우리의료재단김포우리병원',branch:'서부',office:'서부 1지점'},
+  {id:107,name:'인제대학교일산백병원',branch:'서부',office:'서부 1지점'},
+  {id:108,name:'한림대학교성심병원',branch:'서부',office:'서부 1지점'},
+  {id:109,name:'의료법인인봉의료재단뉴고려병원',branch:'서부',office:'서부 1지점'},
+  {id:110,name:'한림대학교강남성심병원',branch:'서부',office:'서부 1지점'},
+  {id:111,name:'한림대학교성심병원',branch:'서부',office:'서부 1지점'},
   {id:112,name:'한양대학교병원',branch:'서부',office:'서부 1지점'},
   {id:113,name:'홍익병원',branch:'서부',office:'서부 1지점'},
   {id:114,name:'가톨릭관동대학교국제성모병원',branch:'서부',office:'서부 2지점'},
@@ -500,9 +501,20 @@ const HOSPITALS = [
   {id:144,name:'청주성모병원',branch:'서부',office:'서부 5지점'},
   {id:145,name:'충남대학교병원',branch:'서부',office:'서부 5지점'},
   {id:146,name:'충북대학교병원',branch:'서부',office:'서부 5지점'},
-  {id:147,name:'가톨릭대학교대전성모병원',branch:'서부',office:'서부 5지점'},
-  {id:148,name:'건양대학교병원',branch:'서부',office:'서부 5지점'},
-  {id:149,name:'대전을지대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:147,name:'학교법인가톨릭학원가톨릭대학교대전성모병원',branch:'서부',office:'서부 5지점'},
+  {id:148,name:'학교법인건양교육재단건양대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:149,name:'학교법인을지학원대전을지대학교병원',branch:'서부',office:'서부 5지점'},
+  {id:150,name:'추병원',branch:'동부',office:'동부2'},
+  {id:151,name:'좋은문화병원',branch:'남부',office:'남부3'},
+  {id:152,name:'비에이치에스한서병원',branch:'남부',office:'남부1'},
+  {id:153,name:'동래봉생병원',branch:'남부',office:'남부1'},
+  {id:154,name:'강남병원',branch:'동부',office:'동부4'},
+  {id:155,name:'차의과학대학교강남차병원',branch:'동부',office:'동부1'},
+  {id:156,name:'원광대학교산본병원',branch:'서부',office:'서부1'},
+  {id:157,name:'의료법인인봉의료재단뉴고려병원',branch:'서부',office:'서부1'},
+  {id:158,name:'의료법인인천사랑병원',branch:'서부',office:'서부3'},
+  {id:159,name:'홍익병원',branch:'서부',office:'서부1'},
+  {id:160,name:'의료법인오성의료재단동군산병원',branch:'남부',office:'남부5'},
 ];
 
 // ===========================
@@ -594,6 +606,18 @@ function oxBtn(id, field) {
   return `<div class="ox-wrap"><button class="ox-btn val-${val}" onclick="toggleOX(${id},'${field}','${val}')">${label}</button></div>`;
 }
 
+function checkBox(id, field) {
+  const val = getVal(id, field);
+  const checked = val === '1';
+  return `<div class="ox-wrap"><button class="ox-btn ${checked ? 'val-O' : 'val-none'}" onclick="toggleCheck(${id},'${field}','${val}')" style="font-size:16px">${checked ? '✓' : '·'}</button></div>`;
+}
+
+function toggleCheck(id, field, current) {
+  const next = current === '1' ? 'none' : '1';
+  saveField(id, field, next);
+  if (!db) { renderTable(); updateStats(); }
+}
+
 function hcpCell(id, field, placeholder) {
   const val = getHcp(id, field);
   return `<input class="hcp-input" value="${val.replace(/"/g,'&quot;')}" placeholder="${placeholder}" oninput="onHcpInput(${id},'${field}',this.value)">`;
@@ -623,6 +647,7 @@ function renderTable() {
       <td class="col-name">${h.name}</td>
       <td class="col-branch"><span class="branch-badge branch-${h.branch}">${h.branch}</span></td>
       <td class="col-office" style="font-size:12px;color:var(--text-muted)">${h.office}</td>
+      <td class="col-ox">${checkBox(h.id,'daiichi')}</td>
       <td class="col-ox">${oxBtn(h.id,'lescol')}</td>
       <td class="col-ox">${oxBtn(h.id,'endo')}</td>
       <td class="col-ox">${oxBtn(h.id,'cardio')}</td>
@@ -649,6 +674,10 @@ function renderTable() {
         </div>
         <div class="m-card-office">📍 ${h.office}</div>
         <div class="m-ox-row">
+          <div class="m-ox-item">
+            <div class="m-ox-label">다이이찌<br>산쿄연락</div>
+            <button class="m-ox-btn val-${getVal(h.id,'daiichi')==='1'?'O':'none'}" onclick="toggleCheck(${h.id},'daiichi','${getVal(h.id,'daiichi')}')" style="font-size:18px">${getVal(h.id,'daiichi')==='1'?'✓':'·'}</button>
+          </div>
           <div class="m-ox-item">
             <div class="m-ox-label">레스콜<br>처방</div>
             <button class="m-ox-btn val-${getVal(h.id,'lescol')}" onclick="toggleOX(${h.id},'lescol','${getVal(h.id,'lescol')}')">${getVal(h.id,'lescol')==='O'?'O':getVal(h.id,'lescol')==='X'?'X':'·'}</button>
